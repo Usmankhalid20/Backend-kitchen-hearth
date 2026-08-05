@@ -11,7 +11,8 @@ exports.aiGenerationLimiter = rateLimit({
     // If the user is authenticated, use their ID as the key, otherwise use IP
     keyGenerator: (req) => {
         return req.user ? req.user.id : req.ip;
-    }
+    },
+    validate: { keyGeneratorIpFallback: false }
 });
 
 // Rate limit for Auth routes to prevent brute-force attacks

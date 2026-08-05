@@ -6,5 +6,7 @@ module.exports = {
   JWT_SECRET: process.env.JWT_SECRET || 'secret123',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY || 'dummy_key_for_testing',
-  NODE_ENV: process.env.NODE_ENV || 'development'
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  CLIENT_ORIGIN: process.env.CLIENT_ORIGIN || 'https://kitchen-hearth.vercel.app'
 };
+
