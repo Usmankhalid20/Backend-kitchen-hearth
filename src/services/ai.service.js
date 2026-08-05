@@ -1,8 +1,9 @@
 const OpenAI = require('openai');
+const env = require('../config/env');
 
 const openai = new OpenAI({
     baseURL: 'https://openrouter.ai/api/v1',
-    apiKey: process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY || 'dummy_key_for_testing'
+    apiKey: env.OPENROUTER_API_KEY
 });
 
 exports.generateRecipe = async (prompt) => {
