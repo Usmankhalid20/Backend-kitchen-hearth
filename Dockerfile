@@ -13,6 +13,12 @@ RUN npm ci --only=production
 COPY server.js ./
 COPY src/ ./src/
 
+# Set file permissions for non-root user
+RUN chown -R node:node /app
+
+# Switch to non-root user for security
+USER node
+
 # Expose backend service port
 EXPOSE 5000
 
