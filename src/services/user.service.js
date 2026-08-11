@@ -1,13 +1,26 @@
 const User = require('../models/User');
+const Role = require('../models/Role');
 const ApiError = require('../utils/ApiError');
 
 exports.getMe = async (userId) => {
-  const user = await User.findById(userId).select('-password_hash').populate({
+  let user = await User.findById(userId).select('-password_hash').populate({
     path: 'role',
     populate: { path: 'permissions' }
   });
   if (!user) throw new ApiError(404, 'User not found');
   
+  if (!user.role) {
+    const defaultRole = await Role.findOne({ name: 'User' });
+    if (defaultRole) {
+      user.role = defaultRole._id;
+      await user.save();
+      user = await User.findById(userId).select('-password_hash').populate({
+        path: 'role',
+        populate: { path: 'permissions' }
+      });
+    }
+  }
+
   // Reset daily limit if it's a new day
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -51,7 +64,7 @@ exports.updateMe = async (userId, updateData) => {
   if (updateData.lastName) allowedUpdates.lastName = updateData.lastName;
   if (updateData.avatar) allowedUpdates.avatar = updateData.avatar;
 
-  const user = await User.findByIdAndUpdate(userId, allowedUpdates, { new: true })
+  let user = await User.findByIdAndUpdate(userId, allowedUpdates, { returnDocument: 'after' })
       .select('-password_hash')
       .populate({
         path: 'role',
@@ -59,5 +72,18 @@ exports.updateMe = async (userId, updateData) => {
       });
   
   if (!user) throw new ApiError(404, 'User not found');
+
+  if (!user.role) {
+    const defaultRole = await Role.findOne({ name: 'User' });
+    if (defaultRole) {
+      user.role = defaultRole._id;
+      await user.save();
+      user = await User.findById(userId).select('-password_hash').populate({
+        path: 'role',
+        populate: { path: 'permissions' }
+      });
+    }
+  }
+
   return user;
 };

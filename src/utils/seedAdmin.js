@@ -31,7 +31,7 @@ const seedSuperAdmin = async () => {
             await Role.findOneAndUpdate(
                 { name: roleData.name },
                 { permissions: roleData.permissions },
-                { upsert: true, new: true }
+                { upsert: true, returnDocument: 'after' }
             );
         }
 

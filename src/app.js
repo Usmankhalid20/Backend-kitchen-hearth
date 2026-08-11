@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -14,11 +15,13 @@ const errorMiddleware = require('./middlewares/error.middleware');
 const app = express();
 
 // Global Middlewares
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // CORS configuration supporting credentials, custom headers, and dynamic origins
 const allowedOrigins = [
-  'https://kitchen-hearth.vercel.app',
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:3000'
@@ -51,12 +54,28 @@ app.use(cors({
 
 app.use(express.json());
 
-// Routes
+// API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/recipes', recipeRoutes);
 app.use('/api/v1/meal-plans', mealPlanRoutes);
 app.use('/api/v1/admin', adminRoutes);
+
+// Serve static frontend assets from backend/public
+const publicPath = path.join(__dirname, '../public');
+app.use(express.static(publicPath));
+
+// SPA Catch-All Route for React Router (Express 5 safe)
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api') && !/\.[a-zA-Z0-9]+$/.test(req.path)) {
+    return res.sendFile(path.join(publicPath, 'index.html'), (err) => {
+      if (err) {
+        next(err);
+      }
+    });
+  }
+  next();
+});
 
 // Centralized Error Handling
 app.use(errorMiddleware);

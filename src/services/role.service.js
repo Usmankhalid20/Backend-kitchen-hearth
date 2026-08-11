@@ -18,7 +18,7 @@ class RoleService {
         return await Role.findByIdAndUpdate(
             roleId,
             { permissions: permissionIds },
-            { new: true }
+            { returnDocument: 'after' }
         ).populate('permissions');
     }
 }

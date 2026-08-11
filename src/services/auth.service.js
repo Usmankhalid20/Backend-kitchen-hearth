@@ -4,6 +4,8 @@ const User = require('../models/User');
 const env = require('../config/env');
 const ApiError = require('../utils/ApiError');
 
+const Role = require('../models/Role');
+
 exports.registerUser = async (data) => {
   const { firstName, lastName, username, email, password } = data;
 
@@ -16,7 +18,16 @@ exports.registerUser = async (data) => {
   const salt = await bcrypt.genSalt(10);
   const password_hash = await bcrypt.hash(password, salt);
 
-  const user = new User({ firstName, lastName, username, email, password_hash });
+  const defaultRole = await Role.findOne({ name: 'User' });
+
+  const user = new User({
+    firstName,
+    lastName,
+    username,
+    email,
+    password_hash,
+    role: defaultRole ? defaultRole._id : null
+  });
   await user.save();
 
   const token = jwt.sign({ id: user._id }, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN });

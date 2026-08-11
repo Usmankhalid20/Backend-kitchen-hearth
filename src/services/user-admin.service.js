@@ -42,11 +42,11 @@ class UserAdminService {
     }
 
     async updateUserStatus(id, status) {
-        return await User.findByIdAndUpdate(id, { status }, { new: true }).select('-password_hash');
+        return await User.findByIdAndUpdate(id, { status }, { returnDocument: 'after' }).select('-password_hash');
     }
 
     async assignRole(userId, roleId) {
-        return await User.findByIdAndUpdate(userId, { role: roleId }, { new: true }).select('-password_hash');
+        return await User.findByIdAndUpdate(userId, { role: roleId }, { returnDocument: 'after' }).select('-password_hash');
     }
 
     async createAdmin(data) {
