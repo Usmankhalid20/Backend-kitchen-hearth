@@ -3,17 +3,9 @@ const router = express.Router();
 const adminController = require('../controllers/admin.controller');
 const authMiddleware = require('../middlewares/auth.middleware');
 const authorize = require('../middlewares/authorize.middleware');
+const validate = require('../middlewares/validate.middleware');
 const validators = require('../validators/admin.validator');
 
-// Zod validation middleware helper
-const validate = (schema) => (req, res, next) => {
-    try {
-        schema.parse(req.body);
-        next();
-    } catch (err) {
-        return res.status(400).json({ success: false, message: 'Validation Error', errors: err.errors });
-    }
-};
 
 // All admin routes require authentication
 router.use(authMiddleware);

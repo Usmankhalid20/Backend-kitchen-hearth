@@ -8,6 +8,6 @@ const env = require('./src/config/env');
 
 connectDB().then(() => {
     app.listen(env.PORT, () => {
-        console.log(`Server is running on port ${env.PORT}`);
+        console.log(`Server is running on ports ${env.PORT}`);
     });
 });

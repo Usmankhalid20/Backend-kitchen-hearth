@@ -1,4 +1,5 @@
 const Recipe = require('../models/Recipe');
+const ApiError = require('../utils/ApiError');
 
 exports.saveRecipe = async (recipeData, userId) => {
   const newRecipe = new Recipe({
@@ -49,9 +50,7 @@ exports.getUserRecipes = async (userId) => {
 exports.getRecipeById = async (id, userId) => {
   const recipe = await Recipe.findOne({ _id: id, user: userId });
   if (!recipe) {
-    const error = new Error('Recipe not found or unauthorized');
-    error.statusCode = 404;
-    throw error;
+    throw new ApiError(404, 'Recipe not found or unauthorized');
   }
   return recipe;
 };
@@ -59,9 +58,7 @@ exports.getRecipeById = async (id, userId) => {
 exports.deleteUserRecipe = async (id, userId) => {
   const recipe = await Recipe.findOneAndDelete({ _id: id, user: userId });
   if (!recipe) {
-    const error = new Error('Recipe not found or unauthorized');
-    error.statusCode = 404;
-    throw error;
+    throw new ApiError(404, 'Recipe not found or unauthorized');
   }
   return recipe;
 };
@@ -69,11 +66,10 @@ exports.deleteUserRecipe = async (id, userId) => {
 exports.toggleFavorite = async (id, userId) => {
   const recipe = await Recipe.findOne({ _id: id, user: userId });
   if (!recipe) {
-    const error = new Error('Recipe not found or unauthorized');
-    error.statusCode = 404;
-    throw error;
+    throw new ApiError(404, 'Recipe not found or unauthorized');
   }
   recipe.isFavorite = !recipe.isFavorite;
   await recipe.save();
   return recipe;
 };
+

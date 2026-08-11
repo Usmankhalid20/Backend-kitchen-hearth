@@ -41,7 +41,11 @@ exports.registerUser = async (data) => {
 };
 
 exports.loginUser = async (email, password) => {
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }).populate({
+    path: 'role',
+    populate: { path: 'permissions' }
+  });
+  
   if (!user) {
     throw new ApiError(401, 'Invalid credentials');
   }
@@ -53,10 +57,9 @@ exports.loginUser = async (email, password) => {
 
   const token = jwt.sign({ id: user._id }, env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES_IN });
 
-  const populatedUser = await User.findById(user._id).select('-password_hash').populate({
-    path: 'role',
-    populate: { path: 'permissions' }
-  });
+  const userObj = user.toObject();
+  delete userObj.password_hash;
 
-  return { token, user: populatedUser };
+  return { token, user: userObj };
 };
+

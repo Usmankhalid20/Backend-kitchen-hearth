@@ -1,8 +1,8 @@
 const http = require('http');
 
 const options = {
-  hostname: 'localhost',
-  port: 5000,
+  hostname: process.env.TEST_HOST || 'localhost',
+  port: process.env.PORT || 5000,
   path: '/api/v1/auth/login',
   method: 'POST',
   headers: {
@@ -28,7 +28,8 @@ req.on('error', error => {
 });
 
 req.write(JSON.stringify({
-  email: 'admin@kitchenhearth.com',
-  password: 'SuperAdmin123!'
+  email: process.env.TEST_EMAIL || 'admin@kitchenhearth.com',
+  password: process.env.TEST_PASSWORD || ''
 }));
 req.end();
+
