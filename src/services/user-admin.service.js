@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const Role = require('../models/Role');
 const bcrypt = require('bcryptjs');
+const ApiError = require('../utils/ApiError');
 
 class UserAdminService {
     async getUsers(page = 1, limit = 20, filters = {}) {
@@ -51,7 +52,13 @@ class UserAdminService {
 
     async createAdmin(data) {
         const { firstName, lastName, username, email, password, roleId } = data;
-        
+
+        const existingEmail = await User.findOne({ email });
+        if (existingEmail) throw new ApiError(400, 'Email already exists');
+
+        const existingUsername = await User.findOne({ username });
+        if (existingUsername) throw new ApiError(400, 'Username already taken');
+
         let targetRoleId = roleId;
         if (!targetRoleId) {
             const adminRole = await Role.findOne({ name: 'Admin' });
@@ -77,3 +84,4 @@ class UserAdminService {
 }
 
 module.exports = new UserAdminService();
+

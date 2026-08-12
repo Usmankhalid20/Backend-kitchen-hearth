@@ -21,17 +21,16 @@ exports.getMe = async (userId) => {
     }
   }
 
-  // Reset daily limit if it's a new day
+  // Calculate effective AI generation count for display without mutating DB during GET
+  const userObj = user.toObject ? user.toObject() : { ...user };
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
-  if (user.lastAiGenerationDate && user.lastAiGenerationDate < today) {
-      user.aiGenerationCount = 0;
-      user.lastAiGenerationDate = null;
-      await user.save();
+
+  if (userObj.lastAiGenerationDate && new Date(userObj.lastAiGenerationDate) < today) {
+    userObj.aiGenerationCount = 0;
   }
 
-  return user;
+  return userObj;
 };
 
 exports.checkAndIncrementAiLimit = async (userId) => {
@@ -42,7 +41,7 @@ exports.checkAndIncrementAiLimit = async (userId) => {
   today.setHours(0, 0, 0, 0);
 
   // Reset if new day
-  if (user.lastAiGenerationDate && user.lastAiGenerationDate < today) {
+  if (user.lastAiGenerationDate && new Date(user.lastAiGenerationDate) < today) {
       user.aiGenerationCount = 0;
   }
 
@@ -76,14 +75,15 @@ exports.updateMe = async (userId, updateData) => {
   if (!user.role) {
     const defaultRole = await Role.findOne({ name: 'User' });
     if (defaultRole) {
-      user.role = defaultRole._id;
-      await user.save();
-      user = await User.findById(userId).select('-password_hash').populate({
-        path: 'role',
-        populate: { path: 'permissions' }
-      });
+      user = await User.findByIdAndUpdate(userId, { role: defaultRole._id }, { returnDocument: 'after' })
+        .select('-password_hash')
+        .populate({
+          path: 'role',
+          populate: { path: 'permissions' }
+        });
     }
   }
 
   return user;
 };
+

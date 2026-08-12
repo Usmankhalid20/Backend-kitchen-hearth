@@ -10,6 +10,7 @@ const { upload } = require('../config/cloudinary');
 
 router.post('/register', authLimiter, validate(registerSchema), authController.register);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/logout', authController.logout);
 router.get('/me', authMiddleware, authController.getMe);
 router.put('/me', authMiddleware, upload.single('avatar'), authController.updateMe);
 
