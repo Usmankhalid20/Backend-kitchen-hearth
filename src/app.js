@@ -27,7 +27,14 @@ app.use(helmet({
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://localhost:5000',
+  'http://localhost:8080',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5000',
+  'http://127.0.0.1:8080',
+  `http://localhost:${env.PORT}`,
+  `http://127.0.0.1:${env.PORT}`
 ];
 
 if (env.CLIENT_ORIGIN) {
@@ -41,14 +48,11 @@ if (env.CLIENT_ORIGIN) {
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, postman, or curl)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    // Allow requests with no origin, explicit allowedOrigins, or any HTTP/HTTPS origin (e.g. EC2 public IP)
+    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://') || origin.startsWith('https://')) {
       return callback(null, true);
-    } else {
-      const msg = `The CORS policy for this site does not allow access from the specified Origin: ${origin}`;
-      return callback(new Error(msg), false);
     }
+    return callback(null, true);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -67,11 +71,18 @@ app.use('/api/v1/admin', adminRoutes);
 
 // Serve static frontend assets from backend/public
 const publicPath = path.join(__dirname, '../public');
-app.use(express.static(publicPath));
+app.use(express.static(publicPath, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('index.html')) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    }
+  }
+}));
 
 // SPA Catch-All Route for React Router (Express 5 safe)
 app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api') && !/\.[a-zA-Z0-9]+$/.test(req.path)) {
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     return res.sendFile(path.join(publicPath, 'index.html'), (err) => {
       if (err) {
         next(err);
