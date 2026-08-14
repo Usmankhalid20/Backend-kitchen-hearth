@@ -62,6 +62,16 @@ app.use(cors({
 app.use(cookieParser());
 app.use(express.json());
 
+// Health Check / Keep-Alive GET Routes
+app.get(['/health', '/api/v1/health'], (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: 'UP',
+    message: 'Server is healthy and active',
+    timestamp: new Date().toISOString()
+  });
+});
+
 // API Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/ai', aiRoutes);
